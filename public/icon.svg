@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#064e3b" />
+    </linearGradient>
+    <radialGradient id="ballShine" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#94a3b8" />
+    </radialGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <!-- Background Squircle -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
+
+  <!-- Society Field Lines in Background -->
+  <circle cx="256" cy="256" r="190" fill="none" stroke="#ffffff" stroke-opacity="0.12" stroke-width="6" />
+  <line x1="256" y1="66" x2="256" y2="446" stroke="#ffffff" stroke-opacity="0.12" stroke-width="6" />
+
+  <!-- Soccer Ball Icon in Center -->
+  <g filter="url(#shadow)">
+    <!-- Ball Base -->
+    <circle cx="256" cy="256" r="140" fill="url(#ballShine)" stroke="#0f172a" stroke-width="8" />
+
+    <!-- Center Pentagon -->
+    <polygon points="256,180 298,210 282,258 230,258 214,210" fill="#0f172a" />
+
+    <!-- Surrounding Patches -->
+    <!-- Top-left -->
+    <polygon points="214,210 160,200 135,235 174,268 230,258" fill="#ffffff" stroke="#0f172a" stroke-width="6" />
+    <polygon points="160,200 185,150 225,145 256,180 214,210" fill="#ffffff" stroke="#0f172a" stroke-width="6" />
+    <!-- Top-right -->
+    <polygon points="256,180 287,145 327,150 352,200 298,210" fill="#ffffff" stroke="#0f172a" stroke-width="6" />
+    <polygon points="298,210 352,200 377,235 338,268 282,258" fill="#ffffff" stroke="#0f172a" stroke-width="6" />
+    <!-- Bottom -->
+    <polygon points="230,258 282,258 295,310 256,338 217,310" fill="#ffffff" stroke="#0f172a" stroke-width="6" />
+
+    <!-- Corner Outer Black Pentagons -->
+    <polygon points="185,150 225,145 210,120 165,125" fill="#0f172a" />
+    <polygon points="327,150 287,145 302,120 347,125" fill="#0f172a" />
+    <polygon points="135,235 174,268 155,305 120,270" fill="#0f172a" />
+    <polygon points="377,235 338,268 357,305 392,270" fill="#0f172a" />
+    <polygon points="217,310 256,338 295,310 280,360 232,360" fill="#0f172a" />
+  </g>
+
+  <!-- Stars / Rating Accents -->
+  <path d="M 256,76 L 261,90 L 276,90 L 264,99 L 268,113 L 256,104 L 244,113 L 248,99 L 236,90 L 251,90 Z" fill="#fbbf24" />
+</svg>

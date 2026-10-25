@@ -1,6 +1,8 @@
 import React from 'react';
 import { Sun, Moon, Share2, ClipboardList, Users, Trophy, LayoutGrid, ShieldAlert } from 'lucide-react';
 
+import { PWAInstallButton } from './PWAInstallButton';
+
 interface HeaderProps {
   activeTab: 'draw' | 'teams' | 'pitch' | 'players' | 'matches' | 'stats';
   setActiveTab: (tab: 'draw' | 'teams' | 'pitch' | 'players' | 'matches' | 'stats') => void;
@@ -26,7 +28,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setActiveTab('draw')}
-              className="text-left group flex items-center gap-2.5 focus:outline-none"
+              className="text-left group flex items-center gap-2.5 focus:outline-none cursor-pointer"
             >
               <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
                 ⚽
@@ -122,8 +124,10 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </nav>
 
-          {/* Zone 3: Actions (WhatsApp import + Theme toggle) */}
+          {/* Zone 3: Actions (PWA install + WhatsApp import + Theme toggle) */}
           <div className="flex items-center gap-2 shrink-0">
+            <PWAInstallButton />
+
             <button
               onClick={onOpenWhatsAppModal}
               title="Colar Lista do WhatsApp"

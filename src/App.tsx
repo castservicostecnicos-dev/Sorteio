@@ -29,6 +29,7 @@ import { MatchesSection } from './components/MatchesSection';
 import { StatsDashboard } from './components/StatsDashboard';
 import { WhatsAppImportModal } from './components/WhatsAppImportModal';
 import { ExportModal } from './components/ExportModal';
+import { OfflineIndicator } from './components/OfflineIndicator';
 import {
   Users,
   LayoutGrid,
@@ -498,6 +499,9 @@ export default function App() {
         teams={drawnTeams}
         drawMode={settings.mode}
       />
+
+      {/* Offline Mode Indicator */}
+      <OfflineIndicator />
     </div>
   );
 }
