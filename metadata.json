@@ -1,0 +1,6 @@
+{
+  "name": "FutSociety Pro - Sorteador de Times",
+  "description": "Sorteador de times para futebol Society com balanceamento por nível, importação via WhatsApp, banco de atletas frequentes, pontuação de partidas e estatísticas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
