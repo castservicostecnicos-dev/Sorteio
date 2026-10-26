@@ -22,7 +22,11 @@ export function getSavedPlayers(): Player[] {
       return [];
     }
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map((p) => ({
+      ...p,
+      position: p.position === 'GK' ? 'GK' : 'FIELD',
+    }));
   } catch {
     return [];
   }
@@ -80,7 +84,18 @@ export function getSavedTeams(): DrawnTeam[] | null {
     const raw = localStorage.getItem(TEAMS_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : null;
+    if (!Array.isArray(parsed) || parsed.length === 0) return null;
+    return parsed.map((team) => ({
+      ...team,
+      players: (team.players || []).map((p: any) => ({
+        ...p,
+        position: p.position === 'GK' ? 'GK' : 'FIELD',
+      })),
+      substitutes: (team.substitutes || []).map((p: any) => ({
+        ...p,
+        position: p.position === 'GK' ? 'GK' : 'FIELD',
+      })),
+    }));
   } catch {
     return null;
   }

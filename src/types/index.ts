@@ -1,11 +1,10 @@
-export type Position = 'GK' | 'DEF' | 'MID' | 'ATT';
+export type Position = 'GK' | 'FIELD';
 
 export interface PositionConfig {
   code: Position;
   label: string;
   shortLabel: string;
-  iconName: string;
-  colorClass: string;
+  emoji: string;
   badgeBg: string;
 }
 
@@ -14,33 +13,15 @@ export const POSITIONS: Record<Position, PositionConfig> = {
     code: 'GK',
     label: 'Goleiro',
     shortLabel: 'GOL',
-    iconName: 'Shield',
-    colorClass: 'text-amber-500',
+    emoji: '🧤',
     badgeBg: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
   },
-  DEF: {
-    code: 'DEF',
-    label: 'Zagueiro / Fixo',
-    shortLabel: 'ZAG',
-    iconName: 'ShieldCheck',
-    colorClass: 'text-blue-500',
-    badgeBg: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-  },
-  MID: {
-    code: 'MID',
-    label: 'Meio / Ala',
-    shortLabel: 'MEI',
-    iconName: 'Activity',
-    colorClass: 'text-emerald-500',
-    badgeBg: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-  },
-  ATT: {
-    code: 'ATT',
-    label: 'Atacante / Pivô',
-    shortLabel: 'ATA',
-    iconName: 'Flame',
-    colorClass: 'text-rose-500',
-    badgeBg: 'bg-rose-500/10 text-rose-500 border-rose-500/20',
+  FIELD: {
+    code: 'FIELD',
+    label: 'Jogador',
+    shortLabel: 'JOG',
+    emoji: '⚽',
+    badgeBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
   },
 };
 
@@ -48,7 +29,7 @@ export interface Player {
   id: string;
   name: string;
   nickname?: string;
-  position: Position;
+  position: Position; // 'GK' or 'FIELD'
   rating: number; // 1.0 to 5.0
   tag?: 'mensalista' | 'diarista' | 'convidado';
   matchesPlayed: number;

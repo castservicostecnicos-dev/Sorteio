@@ -7,7 +7,6 @@ import {
   Shield,
   Star,
   CheckCircle2,
-  Sparkles,
   ClipboardPaste,
   ArrowRight,
 } from 'lucide-react';
@@ -36,7 +35,7 @@ export const DrawSection: React.FC<DrawSectionProps> = ({
 }) => {
   // Single player input state
   const [newName, setNewName] = useState('');
-  const [newPosition, setNewPosition] = useState<Position>('MID');
+  const [isGoalie, setIsGoalie] = useState(false);
   const [newRating, setNewRating] = useState<number>(3.5);
 
   // Quick picker drawer toggle
@@ -52,10 +51,16 @@ export const DrawSection: React.FC<DrawSectionProps> = ({
       (p) => p.name.toLowerCase() === newName.trim().toLowerCase()
     );
 
+    const assignedPos: Position = matchedSaved
+      ? matchedSaved.position
+      : isGoalie
+      ? 'GK'
+      : 'FIELD';
+
     const newP: DraftPlayer = {
       id: `draft_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       name: newName.trim(),
-      position: matchedSaved ? matchedSaved.position : newPosition,
+      position: assignedPos,
       rating: matchedSaved ? matchedSaved.rating : newRating,
       isRegistered: !!matchedSaved,
       registeredPlayerId: matchedSaved?.id,
@@ -63,6 +68,7 @@ export const DrawSection: React.FC<DrawSectionProps> = ({
 
     setDraftPlayers((prev) => [...prev, newP]);
     setNewName('');
+    setIsGoalie(false);
   };
 
   const handleRemoveDraftPlayer = (id: string) => {
@@ -85,11 +91,11 @@ export const DrawSection: React.FC<DrawSectionProps> = ({
     );
   };
 
-  const handleQuickDraftPositionChange = (id: string, pos: Position) => {
+  const handleToggleDraftGoalie = (id: string) => {
     setDraftPlayers((prev) =>
       prev.map((p) => {
         if (p.id === id) {
-          return { ...p, position: pos };
+          return { ...p, position: p.position === 'GK' ? 'FIELD' : 'GK' };
         }
         return p;
       })
@@ -113,7 +119,7 @@ export const DrawSection: React.FC<DrawSectionProps> = ({
         {
           id: `draft_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
           name: player.name,
-          position: player.position,
+          position: player.position === 'GK' ? 'GK' : 'FIELD',
           rating: player.rating,
           isRegistered: true,
           registeredPlayerId: player.id,
@@ -132,7 +138,7 @@ export const DrawSection: React.FC<DrawSectionProps> = ({
         newItems.push({
           id: `draft_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
           name: p.name,
-          position: p.position,
+          position: p.position === 'GK' ? 'GK' : 'FIELD',
           rating: p.rating,
           isRegistered: true,
           registeredPlayerId: p.id,
@@ -142,11 +148,9 @@ export const DrawSection: React.FC<DrawSectionProps> = ({
     setDraftPlayers((prev) => [...prev, ...newItems]);
   };
 
-  // Positional breakdowns
+  // Positional breakdowns (only Goleiros and Jogadores)
   const goalies = draftPlayers.filter((p) => p.position === 'GK');
-  const defenders = draftPlayers.filter((p) => p.position === 'DEF');
-  const midfielders = draftPlayers.filter((p) => p.position === 'MID');
-  const attackers = draftPlayers.filter((p) => p.position === 'ATT');
+  const fieldPlayers = draftPlayers.filter((p) => p.position !== 'GK');
 
   // Math for teams
   const estimatedTeams = Math.max(2, Math.floor(draftPlayers.length / settings.playersPerTeam));
@@ -180,7 +184,7 @@ export const DrawSection: React.FC<DrawSectionProps> = ({
             Monte times equilibrados em segundos.
           </h1>
           <p className="text-slate-300 text-sm sm:text-base mt-2 max-w-xl">
-            Cole a lista do grupo do WhatsApp para puxar todos os nomes. Depois, você pode editar os níveis de cada atleta na aba de Atletas para garantir o equilíbrio perfeito.
+            Cole a lista do grupo do WhatsApp para puxar todos os nomes. Os atletas são divididos em Goleiro e Jogador, e você pode ajustar o nível de cada um na aba de Atletas.
           </p>
 
           <div className="flex flex-wrap items-center gap-3 mt-6">
@@ -252,20 +256,37 @@ export const DrawSection: React.FC<DrawSectionProps> = ({
               placeholder="Buscar atleta..."
               className="px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white"
             />
-            <div className="flex items-center gap-1 overflow-x-auto text-xs">
-              {(['ALL', 'GK', 'DEF', 'MID', 'ATT'] as const).map((pos) => (
-                <button
-                  key={pos}
-                  onClick={() => setPickerPosFilter(pos)}
-                  className={`px-2.5 py-1 rounded-md text-xs font-medium cursor-pointer transition-colors ${
-                    pickerPosFilter === pos
-                      ? 'bg-slate-900 text-white dark:bg-emerald-600'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                  }`}
-                >
-                  {pos === 'ALL' ? 'Todos' : POSITIONS[pos].shortLabel}
-                </button>
-              ))}
+            <div className="flex items-center gap-1 text-xs">
+              <button
+                onClick={() => setPickerPosFilter('ALL')}
+                className={`px-2.5 py-1 rounded-md text-xs font-medium cursor-pointer transition-colors ${
+                  pickerPosFilter === 'ALL'
+                    ? 'bg-slate-900 text-white dark:bg-emerald-600'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                }`}
+              >
+                Todos
+              </button>
+              <button
+                onClick={() => setPickerPosFilter('GK')}
+                className={`px-2.5 py-1 rounded-md text-xs font-medium cursor-pointer transition-colors ${
+                  pickerPosFilter === 'GK'
+                    ? 'bg-amber-500 text-slate-950 font-bold'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                }`}
+              >
+                🧤 Goleiros
+              </button>
+              <button
+                onClick={() => setPickerPosFilter('FIELD')}
+                className={`px-2.5 py-1 rounded-md text-xs font-medium cursor-pointer transition-colors ${
+                  pickerPosFilter === 'FIELD'
+                    ? 'bg-emerald-600 text-white font-bold'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                }`}
+              >
+                ⚽ Jogadores
+              </button>
             </div>
           </div>
 
@@ -289,7 +310,7 @@ export const DrawSection: React.FC<DrawSectionProps> = ({
                   <div className="truncate">
                     <p className="text-xs font-bold truncate">{player.name}</p>
                     <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400">
-                      <span>{POSITIONS[player.position].shortLabel}</span>
+                      <span>{player.position === 'GK' ? '🧤 GOL' : '⚽ JOG'}</span>
                       <span>·</span>
                       <span className="text-amber-500">⭐{player.rating}</span>
                     </div>
@@ -365,11 +386,11 @@ export const DrawSection: React.FC<DrawSectionProps> = ({
                   <div className="text-xs font-bold flex items-center justify-between">
                     <span>Equilibrado</span>
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold">
-                      Top
+                      Recomendado
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                    Equilibra média de estrelas e posições.
+                    Equilibra média de estrelas entre os times.
                   </p>
                 </button>
 
@@ -384,7 +405,7 @@ export const DrawSection: React.FC<DrawSectionProps> = ({
                 >
                   <div className="text-xs font-bold">100% Randômico</div>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                    Sorteio no chapéu sem levar em conta nível.
+                    Sorteio no chapéu sem levar em conta estrelas.
                   </p>
                 </button>
               </div>
@@ -392,7 +413,7 @@ export const DrawSection: React.FC<DrawSectionProps> = ({
 
             {/* Checkbox toggles */}
             <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800 text-xs">
-              <label className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300">
+              <label className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300 select-none">
                 <input
                   type="checkbox"
                   checked={settings.guaranteeGoalies}
@@ -404,7 +425,7 @@ export const DrawSection: React.FC<DrawSectionProps> = ({
                 <span>Distribuir 1 goleiro por time primeiro</span>
               </label>
 
-              <label className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300">
+              <label className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300 select-none">
                 <input
                   type="checkbox"
                   checked={settings.allowSubstitutes}
@@ -413,7 +434,7 @@ export const DrawSection: React.FC<DrawSectionProps> = ({
                   }
                   className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                 />
-                <span>Alocar jogadores excedentes como reservas / suplentes</span>
+                <span>Alocar jogadores excedentes como reservas</span>
               </label>
             </div>
           </div>
@@ -435,41 +456,41 @@ export const DrawSection: React.FC<DrawSectionProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-[11px] text-slate-500 dark:text-slate-400 block mb-1">
-                    Posição
-                  </label>
-                  <select
-                    value={newPosition}
-                    onChange={(e) => setNewPosition(e.target.value as Position)}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs"
-                  >
-                    <option value="GK">🧤 Goleiro</option>
-                    <option value="DEF">🛡️ Zagueiro</option>
-                    <option value="MID">🎯 Meio-Campo</option>
-                    <option value="ATT">⚡ Atacante</option>
-                  </select>
+              {/* Tick Goleiro Checkbox */}
+              <label className="flex items-center gap-2.5 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={isGoalie}
+                  onChange={(e) => setIsGoalie(e.target.checked)}
+                  className="w-4 h-4 rounded text-amber-500 focus:ring-amber-400 accent-amber-500 cursor-pointer shrink-0"
+                />
+                <div className="text-xs">
+                  <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1">
+                    🧤 É Goleiro?
+                  </span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                    {isGoalie ? 'Marcado como Goleiro' : 'Jogador de linha'}
+                  </span>
                 </div>
+              </label>
 
-                <div>
-                  <label className="text-[11px] text-slate-500 dark:text-slate-400 block mb-1">
-                    Nível / Estrelas
-                  </label>
-                  <select
-                    value={newRating}
-                    onChange={(e) => setNewRating(parseFloat(e.target.value))}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs"
-                  >
-                    <option value={5.0}>⭐⭐⭐⭐⭐ (5.0 - Craque)</option>
-                    <option value={4.5}>⭐⭐⭐⭐½ (4.5 - Muito Bom)</option>
-                    <option value={4.0}>⭐⭐⭐⭐ (4.0 - Bom)</option>
-                    <option value={3.5}>⭐⭐⭐½ (3.5 - Regular +)</option>
-                    <option value={3.0}>⭐⭐⭐ (3.0 - Regular)</option>
-                    <option value={2.5}>⭐⭐½ (2.5 - Peladeiro)</option>
-                    <option value={1.5}>⭐½ (1.5 - Inexperiente)</option>
-                  </select>
-                </div>
+              <div>
+                <label className="text-[11px] text-slate-500 dark:text-slate-400 block mb-1">
+                  Nível / Estrelas
+                </label>
+                <select
+                  value={newRating}
+                  onChange={(e) => setNewRating(parseFloat(e.target.value))}
+                  className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white text-xs font-medium"
+                >
+                  <option value={5.0}>⭐⭐⭐⭐⭐ (5.0 - Craque)</option>
+                  <option value={4.5}>⭐⭐⭐⭐½ (4.5 - Muito Bom)</option>
+                  <option value={4.0}>⭐⭐⭐⭐ (4.0 - Bom)</option>
+                  <option value={3.5}>⭐⭐⭐½ (3.5 - Regular +)</option>
+                  <option value={3.0}>⭐⭐⭐ (3.0 - Regular)</option>
+                  <option value={2.5}>⭐⭐½ (2.5 - Peladeiro)</option>
+                  <option value={1.5}>⭐½ (1.5 - Inexperiente)</option>
+                </select>
               </div>
 
               <button
@@ -534,39 +555,29 @@ export const DrawSection: React.FC<DrawSectionProps> = ({
               </div>
             </div>
 
-            {/* Position Summary Bar */}
+            {/* Position Summary Bar: Only Goleiros and Jogadores */}
             {draftPlayers.length > 0 && (
-              <div className="grid grid-cols-4 gap-2 text-center text-xs">
-                <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/50 dark:border-amber-900/50">
-                  <span className="text-[10px] text-amber-600 dark:text-amber-400 block font-semibold">
-                    Goleiros
-                  </span>
-                  <span className="text-sm font-bold text-amber-700 dark:text-amber-300">
+              <div className="grid grid-cols-2 gap-3 text-center text-xs">
+                <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/50 dark:border-amber-900/50 flex items-center justify-between px-4">
+                  <div className="text-left">
+                    <span className="text-[10px] text-amber-600 dark:text-amber-400 block font-semibold">
+                      Goleiros
+                    </span>
+                    <span className="text-xs text-slate-400">1 por time</span>
+                  </div>
+                  <span className="text-base font-black text-amber-700 dark:text-amber-300">
                     🧤 {goalies.length}
                   </span>
                 </div>
-                <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200/50 dark:border-blue-900/50">
-                  <span className="text-[10px] text-blue-600 dark:text-blue-400 block font-semibold">
-                    Defensores
-                  </span>
-                  <span className="text-sm font-bold text-blue-700 dark:text-blue-300">
-                    🛡️ {defenders.length}
-                  </span>
-                </div>
-                <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/50 dark:border-emerald-900/50">
-                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 block font-semibold">
-                    Meio-Campo
-                  </span>
-                  <span className="text-sm font-bold text-emerald-700 dark:text-emerald-300">
-                    🎯 {midfielders.length}
-                  </span>
-                </div>
-                <div className="p-2 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200/50 dark:border-rose-900/50">
-                  <span className="text-[10px] text-rose-600 dark:text-rose-400 block font-semibold">
-                    Atacantes
-                  </span>
-                  <span className="text-sm font-bold text-rose-700 dark:text-rose-300">
-                    ⚡ {attackers.length}
+                <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/50 dark:border-emerald-900/50 flex items-center justify-between px-4">
+                  <div className="text-left">
+                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 block font-semibold">
+                      Jogadores de Linha
+                    </span>
+                    <span className="text-xs text-slate-400">Balanceados por estrelas</span>
+                  </div>
+                  <span className="text-base font-black text-emerald-700 dark:text-emerald-300">
+                    ⚽ {fieldPlayers.length}
                   </span>
                 </div>
               </div>
@@ -606,7 +617,7 @@ export const DrawSection: React.FC<DrawSectionProps> = ({
               /* Players Table / List */
               <div className="divide-y divide-slate-100 dark:divide-slate-800/60 max-h-96 overflow-y-auto pr-1">
                 {draftPlayers.map((player, index) => {
-                  const posCfg = POSITIONS[player.position];
+                  const isGk = player.position === 'GK';
                   return (
                     <div
                       key={player.id}
@@ -621,8 +632,8 @@ export const DrawSection: React.FC<DrawSectionProps> = ({
                             {player.name}
                           </p>
                           <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
-                            <span className="font-semibold text-slate-700 dark:text-slate-300">
-                              {posCfg.label}
+                            <span className={isGk ? 'font-bold text-amber-500' : 'text-emerald-600 dark:text-emerald-400 font-semibold'}>
+                              {isGk ? '🧤 Goleiro' : '⚽ Jogador'}
                             </span>
                             <span>·</span>
                             <span className="text-amber-500 flex items-center gap-0.5 font-bold">
@@ -639,7 +650,7 @@ export const DrawSection: React.FC<DrawSectionProps> = ({
                           <button
                             type="button"
                             onClick={() => handleQuickDraftRatingChange(player.id, -0.5)}
-                            className="w-5 h-5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold flex items-center justify-center hover:bg-slate-200"
+                            className="w-5 h-5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold flex items-center justify-center hover:bg-slate-200 cursor-pointer"
                             title="Diminuir nível"
                           >
                             -
@@ -647,26 +658,31 @@ export const DrawSection: React.FC<DrawSectionProps> = ({
                           <button
                             type="button"
                             onClick={() => handleQuickDraftRatingChange(player.id, 0.5)}
-                            className="w-5 h-5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold flex items-center justify-center hover:bg-slate-200"
+                            className="w-5 h-5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold flex items-center justify-center hover:bg-slate-200 cursor-pointer"
                             title="Aumentar nível"
                           >
                             +
                           </button>
                         </div>
 
-                        {/* Position select */}
-                        <select
-                          value={player.position}
-                          onChange={(e) =>
-                            handleQuickDraftPositionChange(player.id, e.target.value as Position)
-                          }
-                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${posCfg.badgeBg} cursor-pointer`}
+                        {/* Quick toggle Goleiro / Jogador */}
+                        <button
+                          type="button"
+                          onClick={() => handleToggleDraftGoalie(player.id)}
+                          className={`text-[10px] font-bold px-2 py-1 rounded-lg border transition-all cursor-pointer flex items-center gap-1 ${
+                            isGk
+                              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 ring-1 ring-amber-400/50'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:text-slate-900'
+                          }`}
+                          title="Clique para alternar entre Goleiro e Jogador"
                         >
-                          <option value="GK">GOL</option>
-                          <option value="DEF">ZAG</option>
-                          <option value="MID">MEI</option>
-                          <option value="ATT">ATA</option>
-                        </select>
+                          <span className={`w-3 h-3 rounded flex items-center justify-center text-[9px] font-bold border ${
+                            isGk ? 'bg-amber-500 text-slate-950 border-amber-600' : 'border-slate-400'
+                          }`}>
+                            {isGk ? '✓' : ''}
+                          </span>
+                          <span>{isGk ? '🧤 GOL' : '⚽ JOG'}</span>
+                        </button>
 
                         <button
                           type="button"

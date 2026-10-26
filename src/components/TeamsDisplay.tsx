@@ -190,13 +190,11 @@ export const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
                 </div>
               </div>
 
-              {/* Positional balance bar */}
+              {/* Positional balance bar: only Goleiro and Jogadores */}
               <div className="px-4 py-2 bg-slate-50 dark:bg-slate-950/60 border-b border-slate-100 dark:border-slate-800 text-[11px] flex items-center justify-between text-slate-500 dark:text-slate-400">
                 <span>
-                  🧤 {team.players.filter((p) => p.position === 'GK').length} Gol · 🛡️{' '}
-                  {team.players.filter((p) => p.position === 'DEF').length} Zag · 🎯{' '}
-                  {team.players.filter((p) => p.position === 'MID').length} Mei · ⚡{' '}
-                  {team.players.filter((p) => p.position === 'ATT').length} Ata
+                  🧤 {team.players.filter((p) => p.position === 'GK').length} Goleiro · ⚽{' '}
+                  {team.players.filter((p) => p.position !== 'GK').length} Jogadores
                 </span>
                 <span className="text-[10px] font-medium text-slate-400">
                   Toque p/ trocar

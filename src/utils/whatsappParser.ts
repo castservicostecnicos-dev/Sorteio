@@ -39,56 +39,21 @@ export function parseWhatsAppList(
       continue;
     }
 
-    // Attempt to extract position hints
-    let position: Position = 'MID'; // default
+    // Only position is Goalkeeper ('GK'). All others are field players ('FIELD')
+    let position: Position = 'FIELD';
     if (
       lower.includes('(g)') ||
       lower.includes('[g]') ||
+      lower.includes('(gol)') ||
+      lower.includes('[gol]') ||
+      lower.includes('(goleiro)') ||
+      lower.includes('[goleiro]') ||
       lower.includes('goleiro') ||
-      lower.includes('gol') ||
       lower.includes('🧤') ||
-      lower.includes('luva')
+      lower.includes('luva') ||
+      /\bgol\b/i.test(lower)
     ) {
       position = 'GK';
-    } else if (
-      lower.includes('(z)') ||
-      lower.includes('[z]') ||
-      lower.includes('(d)') ||
-      lower.includes('[d]') ||
-      lower.includes('zagueiro') ||
-      lower.includes('zaga') ||
-      lower.includes('fixo') ||
-      lower.includes('defesa') ||
-      lower.includes('defensor') ||
-      lower.includes('lateral') ||
-      lower.includes('🛡️')
-    ) {
-      position = 'DEF';
-    } else if (
-      lower.includes('(a)') ||
-      lower.includes('[a]') ||
-      lower.includes('(ata)') ||
-      lower.includes('atacante') ||
-      lower.includes('ataque') ||
-      lower.includes('pivô') ||
-      lower.includes('pivo') ||
-      lower.includes('centroavante') ||
-      lower.includes('ponta') ||
-      lower.includes('⚡') ||
-      lower.includes('🔥')
-    ) {
-      position = 'ATT';
-    } else if (
-      lower.includes('(m)') ||
-      lower.includes('[m]') ||
-      lower.includes('(mei)') ||
-      lower.includes('meio') ||
-      lower.includes('meia') ||
-      lower.includes('ala') ||
-      lower.includes('volante') ||
-      lower.includes('🎯')
-    ) {
-      position = 'MID';
     }
 
     // Extract rating hint if present (e.g. ⭐⭐⭐⭐ or 4.5 or 4/5)
@@ -106,15 +71,15 @@ export function parseWhatsAppList(
       }
     }
 
-    // Clean name: remove leading numbers, punctuation, emojis, and position tags
+    // Clean name: remove leading numbers, punctuation, emojis, and goalie markers
     let cleanName = trimmed
       // remove leading numbers like "1.", "1 -", "01)", "1 "
       .replace(/^[0-9]{1,2}[\.\-\)\s:]+\s*/, '')
       // remove leading bullet points or emojis
       .replace(/^[\s•\-\*⚽🧤🛡️🎯⚡🔥]+\s*/, '')
-      // remove trailing or parenthesized position notes like "(Goleiro)", "(G)", "[Z]", "- Meio"
-      .replace(/\s*[\(\[](?:goleiro|gol|g|zagueiro|zaga|fixo|defesa|lateral|meio|meia|volante|ala|atacante|ataque|pivô|pivo|ponta)[\)\]]/gi, '')
-      .replace(/[-–]\s*(?:goleiro|gol|zagueiro|zaga|fixo|defesa|lateral|meio|meia|volante|ala|atacante|ataque|pivô|pivo|ponta)\b/gi, '')
+      // remove trailing or parenthesized goalie notes like "(Goleiro)", "(G)", "- Goleiro"
+      .replace(/\s*[\(\[](?:goleiro|gol|g)[\)\]]/gi, '')
+      .replace(/[-–]\s*(?:goleiro|gol)\b/gi, '')
       // remove trailing rating strings like "⭐⭐⭐⭐" or "- 4.5" or "/5"
       .replace(/⭐+/g, '')
       .replace(/(?:[-–:]?\s*(?:nota\s*)?[1-5](?:\.[0-9])?(?:\/5)?)$/i, '')

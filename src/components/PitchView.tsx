@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { DrawnTeam, POSITIONS } from '../types';
-import { Star, Users, ArrowRightLeft } from 'lucide-react';
 
 interface PitchViewProps {
   teams: DrawnTeam[];
@@ -37,7 +36,7 @@ export const PitchView: React.FC<PitchViewProps> = ({ teams }) => {
             Campinho Tático Society
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Visualização das formações táticas no gramado sintético society.
+            Visualização dos goleiros e jogadores de linha no gramado sintético society.
           </p>
         </div>
 
@@ -126,7 +125,7 @@ export const PitchView: React.FC<PitchViewProps> = ({ teams }) => {
           {/* Player Formations Rendering */}
           {viewMode === 'clash' && teams.length >= 2 ? (
             <div className="relative z-10 w-full h-full grid grid-cols-2 gap-4">
-              {/* Team A (Left Half - Attacks Right) */}
+              {/* Team A (Left Half) */}
               <div className="relative w-full h-full">
                 <div className="absolute top-2 left-2 z-20 px-2.5 py-1 rounded-lg bg-black/40 backdrop-blur-xs text-xs font-bold border border-white/10 flex items-center gap-1.5">
                   <span>{teamA.color.emoji}</span>
@@ -136,7 +135,7 @@ export const PitchView: React.FC<PitchViewProps> = ({ teams }) => {
                 {renderTeamHalf(teamA, 'left')}
               </div>
 
-              {/* Team B (Right Half - Attacks Left) */}
+              {/* Team B (Right Half) */}
               <div className="relative w-full h-full">
                 <div className="absolute top-2 right-2 z-20 px-2.5 py-1 rounded-lg bg-black/40 backdrop-blur-xs text-xs font-bold border border-white/10 flex items-center gap-1.5">
                   <span className="text-amber-300">({teamB.averageRating}⭐)</span>
@@ -167,25 +166,22 @@ export const PitchView: React.FC<PitchViewProps> = ({ teams }) => {
 // Helper to render half-pitch formation (clash mode)
 function renderTeamHalf(team: DrawnTeam, side: 'left' | 'right') {
   const goalies = team.players.filter((p) => p.position === 'GK');
-  const defenders = team.players.filter((p) => p.position === 'DEF');
-  const midfielders = team.players.filter((p) => p.position === 'MID');
-  const attackers = team.players.filter((p) => p.position === 'ATT');
+  const fieldSquad = team.players.filter((p) => p.position !== 'GK');
 
-  // If no goalie, take first player
-  const effectiveGoalie = goalies.length > 0 ? goalies[0] : team.players[0];
-  const fieldSquad = team.players.filter((p) => p.id !== effectiveGoalie?.id);
+  // If no designated goalie, take first player
+  const effectiveGoalie = goalies.length > 0 ? goalies[0] : fieldSquad[0];
+  const outfield = team.players.filter((p) => p.id !== effectiveGoalie?.id);
 
-  // Re-split field squad
-  const defs = fieldSquad.filter((p) => p.position === 'DEF');
-  const mids = fieldSquad.filter((p) => p.position === 'MID');
-  const atts = fieldSquad.filter((p) => p.position === 'ATT' || p.position === 'GK');
+  // Divide outfield players into 2 balanced columns (defensive line and offensive line)
+  const mid = Math.ceil(outfield.length / 2);
+  const backLine = outfield.slice(0, mid);
+  const frontLine = outfield.slice(mid);
 
-  // If one category is empty, redistribute for visual balance
-  const cols = side === 'left' ? [defs, mids, atts] : [atts, mids, defs];
+  const cols = side === 'left' ? [backLine, frontLine] : [frontLine, backLine];
 
   return (
     <div className="w-full h-full flex items-center justify-between px-2 sm:px-6">
-      {/* Goalkeeper */}
+      {/* Goalkeeper (Left side) */}
       {side === 'left' && (
         <div className="shrink-0 flex items-center justify-center">
           {effectiveGoalie && renderPlayerToken(effectiveGoalie, team, true)}
@@ -202,7 +198,7 @@ function renderTeamHalf(team: DrawnTeam, side: 'left' | 'right') {
         </div>
       ))}
 
-      {/* Goalkeeper (if right side) */}
+      {/* Goalkeeper (Right side) */}
       {side === 'right' && (
         <div className="shrink-0 flex items-center justify-center">
           {effectiveGoalie && renderPlayerToken(effectiveGoalie, team, true)}
@@ -215,16 +211,16 @@ function renderTeamHalf(team: DrawnTeam, side: 'left' | 'right') {
 // Helper to render full-pitch lineup
 function renderFullPitchTeam(team: DrawnTeam) {
   const goalies = team.players.filter((p) => p.position === 'GK');
-  const defenders = team.players.filter((p) => p.position === 'DEF');
-  const midfielders = team.players.filter((p) => p.position === 'MID');
-  const attackers = team.players.filter((p) => p.position === 'ATT');
+  const fieldSquad = team.players.filter((p) => p.position !== 'GK');
 
-  const goalie = goalies[0] || team.players[0];
-  const otherPlayers = team.players.filter((p) => p.id !== goalie?.id);
+  const goalie = goalies[0] || fieldSquad[0];
+  const outfield = team.players.filter((p) => p.id !== goalie?.id);
 
-  const defs = otherPlayers.filter((p) => p.position === 'DEF');
-  const mids = otherPlayers.filter((p) => p.position === 'MID');
-  const atts = otherPlayers.filter((p) => p.position === 'ATT' || p.position === 'GK');
+  // Split outfield into 3 segments: defense, midfield, attack
+  const chunkSize = Math.ceil(outfield.length / 3) || 1;
+  const defs = outfield.slice(0, chunkSize);
+  const mids = outfield.slice(chunkSize, chunkSize * 2);
+  const atts = outfield.slice(chunkSize * 2);
 
   return (
     <div className="w-full h-full flex items-center justify-between px-4 sm:px-12 py-8">
@@ -233,20 +229,22 @@ function renderFullPitchTeam(team: DrawnTeam) {
         {goalie && renderPlayerToken(goalie, team, true)}
       </div>
 
-      {/* Defenders */}
+      {/* Field lines */}
       <div className="flex flex-col items-center justify-around h-full py-4">
         {defs.map((p) => renderPlayerToken(p, team, false))}
       </div>
 
-      {/* Midfielders */}
-      <div className="flex flex-col items-center justify-around h-full py-2">
-        {mids.map((p) => renderPlayerToken(p, team, false))}
-      </div>
+      {mids.length > 0 && (
+        <div className="flex flex-col items-center justify-around h-full py-2">
+          {mids.map((p) => renderPlayerToken(p, team, false))}
+        </div>
+      )}
 
-      {/* Attackers */}
-      <div className="flex flex-col items-center justify-around h-full py-6">
-        {atts.map((p) => renderPlayerToken(p, team, false))}
-      </div>
+      {atts.length > 0 && (
+        <div className="flex flex-col items-center justify-around h-full py-6">
+          {atts.map((p) => renderPlayerToken(p, team, false))}
+        </div>
+      )}
     </div>
   );
 }
@@ -256,11 +254,13 @@ function renderPlayerToken(
   team: DrawnTeam,
   isGoalie: boolean
 ) {
+  const roleLabel = isGoalie ? 'Goleiro' : 'Jogador';
+
   return (
     <div
       key={player.name}
       className="flex flex-col items-center group cursor-pointer transition-transform hover:scale-110"
-      title={`${player.name} (${player.position}) - ${player.rating}⭐`}
+      title={`${player.name} (${roleLabel}) - ${player.rating}⭐`}
     >
       <div
         className={`w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center font-extrabold text-xs sm:text-sm shadow-md border-2 ${
@@ -270,7 +270,7 @@ function renderPlayerToken(
         }`}
         style={!isGoalie ? { backgroundColor: team.color.hex } : undefined}
       >
-        {isGoalie ? '🧤' : POSITIONS[player.position as keyof typeof POSITIONS]?.shortLabel || 'J'}
+        {isGoalie ? '🧤' : '⚽'}
       </div>
       <div className="mt-1 px-1.5 py-0.5 rounded-md bg-black/60 backdrop-blur-xs text-[10px] sm:text-xs font-bold text-white text-center whitespace-nowrap max-w-[80px] sm:max-w-[110px] truncate shadow-xs">
         {player.name.split(' ')[0]}

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { X, Check, FileText, AlertCircle, UserPlus, ClipboardPaste } from 'lucide-react';
+import { X, Check, ClipboardPaste } from 'lucide-react';
 import { DraftPlayer, Player, POSITIONS } from '../types';
 import { parseWhatsAppList } from '../utils/whatsappParser';
 
@@ -33,9 +33,7 @@ export const WhatsAppImportModal: React.FC<WhatsAppImportModalProps> = ({
   };
 
   const goalieCount = players.filter((p) => p.position === 'GK').length;
-  const defCount = players.filter((p) => p.position === 'DEF').length;
-  const midCount = players.filter((p) => p.position === 'MID').length;
-  const attCount = players.filter((p) => p.position === 'ATT').length;
+  const fieldCount = players.filter((p) => p.position === 'FIELD').length;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
@@ -74,7 +72,7 @@ export const WhatsAppImportModal: React.FC<WhatsAppImportModalProps> = ({
               rows={8}
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="Exemplo de lista copiada do WhatsApp:&#10;1. Carlos (Goleiro)&#10;2. Marcelo&#10;3. Bruno (Zaga)&#10;4. Lucas Camisa 10&#10;5. Diego Matador&#10;6. André&#10;7. Rafael&#10;8. Rodrigo"
+              placeholder="Exemplo de lista copiada do WhatsApp:&#10;1. Carlos (Goleiro)&#10;2. Marcelo&#10;3. Bruno&#10;4. Lucas&#10;5. Diego&#10;6. André&#10;7. Rafael&#10;8. Rodrigo"
               className="w-full px-3.5 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono transition-all"
             />
           </div>
@@ -89,26 +87,16 @@ export const WhatsAppImportModal: React.FC<WhatsAppImportModalProps> = ({
                 </span>
               </div>
 
-              {/* Positional count row */}
+              {/* Positional count row: Goleiros and Jogadores */}
               <div className="flex flex-wrap items-center gap-2 text-xs">
                 {goalieCount > 0 && (
-                  <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-500 font-medium">
+                  <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-500 border border-amber-500/20 font-bold flex items-center gap-1">
                     🧤 {goalieCount} Goleiro{goalieCount !== 1 ? 's' : ''}
                   </span>
                 )}
-                {defCount > 0 && (
-                  <span className="px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-500 font-medium">
-                    🛡️ {defCount} Zagueiro{defCount !== 1 ? 's' : ''}
-                  </span>
-                )}
-                {midCount > 0 && (
-                  <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500 font-medium">
-                    🎯 {midCount} Meia{midCount !== 1 ? 's' : ''}
-                  </span>
-                )}
-                {attCount > 0 && (
-                  <span className="px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-500 font-medium">
-                    ⚡ {attCount} Atacante{attCount !== 1 ? 's' : ''}
+                {fieldCount > 0 && (
+                  <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-bold flex items-center gap-1">
+                    ⚽ {fieldCount} Jogador{fieldCount !== 1 ? 'es' : ''}
                   </span>
                 )}
               </div>
@@ -121,7 +109,9 @@ export const WhatsAppImportModal: React.FC<WhatsAppImportModalProps> = ({
                     className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
                   >
                     <span className="font-semibold">{p.name}</span>
-                    <span className="text-[10px] text-slate-500">({POSITIONS[p.position].shortLabel})</span>
+                    <span className="text-[10px] text-slate-500">
+                      {p.position === 'GK' ? '🧤 Goleiro' : '⚽ Jogador'}
+                    </span>
                   </span>
                 ))}
               </div>

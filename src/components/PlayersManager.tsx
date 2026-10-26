@@ -6,7 +6,6 @@ import {
   Star,
   Edit2,
   Trash2,
-  Trophy,
   Download,
   Upload,
   Check,
@@ -44,7 +43,7 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
   const [currentEditId, setCurrentEditId] = useState<string | null>(null);
   const [formName, setFormName] = useState('');
   const [formNickname, setFormNickname] = useState('');
-  const [formPosition, setFormPosition] = useState<Position>('MID');
+  const [formPosition, setFormPosition] = useState<Position>('FIELD');
   const [formRating, setFormRating] = useState<number>(3.5);
   const [formTag, setFormTag] = useState<'mensalista' | 'diarista' | 'convidado'>('mensalista');
 
@@ -62,7 +61,7 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
     setCurrentEditId(null);
     setFormName('');
     setFormNickname('');
-    setFormPosition('MID');
+    setFormPosition('FIELD');
     setFormRating(3.5);
     setFormTag('mensalista');
     setIsEditing(true);
@@ -72,7 +71,7 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
     setCurrentEditId(player.id);
     setFormName(player.name);
     setFormNickname(player.nickname || '');
-    setFormPosition(player.position);
+    setFormPosition(player.position === 'GK' ? 'GK' : 'FIELD');
     setFormRating(player.rating);
     setFormTag(player.tag || 'mensalista');
     setIsEditing(true);
@@ -90,11 +89,12 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
     onUpdatePlayers(updated);
   };
 
-  // Instant position updater
-  const handleQuickPositionChange = (playerId: string, newPos: Position) => {
+  // Instant goalie toggle updater
+  const handleToggleGoalie = (playerId: string) => {
     const updated = players.map((p) => {
       if (p.id === playerId) {
-        return { ...p, position: newPos };
+        const nextPos: Position = p.position === 'GK' ? 'FIELD' : 'GK';
+        return { ...p, position: nextPos };
       }
       return p;
     });
@@ -215,6 +215,9 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
     return searchMatch && posMatch && tagMatch;
   });
 
+  const totalGoalies = players.filter((p) => p.position === 'GK').length;
+  const totalField = players.filter((p) => p.position !== 'GK').length;
+
   return (
     <div className="space-y-6">
       {/* Toast Notification */}
@@ -238,7 +241,7 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
             </span>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Cole a lista do WhatsApp e edite o nível (estrelas) e posição de cada jogador.
+            Defina o nível de cada jogador (estrelas) e marque com o tick quem é goleiro.
           </p>
         </div>
 
@@ -331,7 +334,7 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
         </div>
       </div>
 
-      {/* Filter and Search Bar (only show if players exist) */}
+      {/* Filter and Search Bar */}
       {players.length > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
           <div className="relative flex-1 min-w-[200px]">
@@ -345,21 +348,40 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
             />
           </div>
 
-          {/* Position filters */}
-          <div className="flex items-center gap-1 overflow-x-auto text-xs">
-            {(['ALL', 'GK', 'DEF', 'MID', 'ATT'] as const).map((pos) => (
-              <button
-                key={pos}
-                onClick={() => setPosFilter(pos)}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors ${
-                  posFilter === pos
-                    ? 'bg-slate-900 text-white dark:bg-emerald-600'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900'
-                }`}
-              >
-                {pos === 'ALL' ? 'Todas Posições' : POSITIONS[pos].label}
-              </button>
-            ))}
+          {/* Position filters: ONLY Todos, Goleiros, Jogadores */}
+          <div className="flex items-center gap-1 text-xs">
+            <button
+              onClick={() => setPosFilter('ALL')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
+                posFilter === 'ALL'
+                  ? 'bg-slate-900 text-white dark:bg-emerald-600'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              }`}
+            >
+              Todos ({players.length})
+            </button>
+            <button
+              onClick={() => setPosFilter('GK')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1 ${
+                posFilter === 'GK'
+                  ? 'bg-amber-500 text-slate-950 font-bold'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              }`}
+            >
+              <span>🧤</span>
+              <span>Goleiros ({totalGoalies})</span>
+            </button>
+            <button
+              onClick={() => setPosFilter('FIELD')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1 ${
+                posFilter === 'FIELD'
+                  ? 'bg-emerald-600 text-white font-bold'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              }`}
+            >
+              <span>⚽</span>
+              <span>Jogadores ({totalField})</span>
+            </button>
           </div>
 
           {/* Tag filters */}
@@ -374,7 +396,7 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                 }`}
               >
-                {tag === 'ALL' ? 'Todos' : tag}
+                {tag === 'ALL' ? 'Todos Vínculos' : tag}
               </button>
             ))}
           </div>
@@ -418,10 +440,10 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs overflow-hidden">
           <div className="p-3 bg-slate-50 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
             <span className="font-bold text-slate-700 dark:text-slate-300">
-              Edição Rápida de Nível e Posição ({filteredPlayers.length} atletas)
+              Edição Rápida ({filteredPlayers.length} atletas)
             </span>
             <span className="text-slate-400">
-              Clique nas estrelas ou selecione a posição diretamente na tabela
+              Clique no botão de Goleiro ou nas estrelas para ajustar na hora
             </span>
           </div>
 
@@ -431,7 +453,7 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
                 <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 font-semibold bg-white dark:bg-slate-900">
                   <th className="py-2.5 px-3 w-8">#</th>
                   <th className="py-2.5 px-3 min-w-[160px]">Nome do Atleta</th>
-                  <th className="py-2.5 px-3 min-w-[140px]">Posição</th>
+                  <th className="py-2.5 px-3 min-w-[130px]">Goleiro?</th>
                   <th className="py-2.5 px-3 min-w-[180px]">Nível / Estrelas</th>
                   <th className="py-2.5 px-3 min-w-[100px]">Vínculo</th>
                   <th className="py-2.5 px-3 text-right w-24">Ações</th>
@@ -439,6 +461,7 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                 {filteredPlayers.map((player, idx) => {
+                  const isGoalie = player.position === 'GK';
                   return (
                     <tr
                       key={player.id}
@@ -459,20 +482,25 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
                         )}
                       </td>
 
-                      {/* Inline Position Selector */}
+                      {/* Goleiro Tick / Toggle Button */}
                       <td className="py-2.5 px-3">
-                        <select
-                          value={player.position}
-                          onChange={(e) =>
-                            handleQuickPositionChange(player.id, e.target.value as Position)
-                          }
-                          className="px-2 py-1 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-medium cursor-pointer"
+                        <button
+                          type="button"
+                          onClick={() => handleToggleGoalie(player.id)}
+                          className={`px-3 py-1.5 text-xs rounded-xl font-bold border transition-all cursor-pointer flex items-center gap-1.5 ${
+                            isGoalie
+                              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 ring-1 ring-amber-400/50'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:text-slate-900'
+                          }`}
+                          title="Clique para marcar ou desmarcar como Goleiro"
                         >
-                          <option value="GK">🧤 Goleiro</option>
-                          <option value="DEF">🛡️ Zagueiro</option>
-                          <option value="MID">🎯 Meio-Campo</option>
-                          <option value="ATT">⚡ Atacante</option>
-                        </select>
+                          <span className={`w-3.5 h-3.5 rounded flex items-center justify-center text-[10px] font-bold border ${
+                            isGoalie ? 'bg-amber-500 text-slate-950 border-amber-600' : 'border-slate-400'
+                          }`}>
+                            {isGoalie ? '✓' : ''}
+                          </span>
+                          <span>{isGoalie ? '🧤 Goleiro' : '⚽ Jogador'}</span>
+                        </button>
                       </td>
 
                       {/* Instant Star Rating Clicker */}
@@ -566,7 +594,7 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
       {viewMode === 'cards' && filteredPlayers.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredPlayers.map((player) => {
-            const posCfg = POSITIONS[player.position];
+            const isGoalie = player.position === 'GK';
 
             return (
               <div
@@ -589,8 +617,8 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
                           {player.name}
                         </h3>
                         <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
-                          <span className="font-medium text-slate-700 dark:text-slate-300">
-                            {posCfg.label}
+                          <span className={`font-semibold ${isGoalie ? 'text-amber-500' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                            {isGoalie ? '🧤 Goleiro' : '⚽ Jogador'}
                           </span>
                           {player.tag && (
                             <>
@@ -622,7 +650,7 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
                     </div>
                   </div>
 
-                  {/* Quick Level Slider / Clicker right on the card */}
+                  {/* Level Slider / Clicker right on the card */}
                   <div className="mt-3.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800">
                     <div className="flex items-center justify-between text-xs mb-1.5">
                       <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
@@ -681,23 +709,28 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
                     </div>
                   </div>
 
-                  {/* Quick Position Pills */}
-                  <div className="flex items-center gap-1 mt-2.5">
-                    {(['GK', 'DEF', 'MID', 'ATT'] as const).map((pos) => (
-                      <button
-                        key={pos}
-                        type="button"
-                        onClick={() => handleQuickPositionChange(player.id, pos)}
-                        className={`flex-1 py-1 text-[10px] font-bold rounded-lg border transition-all cursor-pointer ${
-                          player.position === pos
-                            ? `${POSITIONS[pos].badgeBg} ring-1 ring-emerald-500`
-                            : 'border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                        }`}
-                      >
-                        {POSITIONS[pos].shortLabel}
-                      </button>
-                    ))}
-                  </div>
+                  {/* Tick / Toggle Goleiro on card */}
+                  <button
+                    type="button"
+                    onClick={() => handleToggleGoalie(player.id)}
+                    className={`w-full py-2 px-3 text-xs font-bold rounded-xl border transition-all cursor-pointer flex items-center justify-between mt-2.5 ${
+                      isGoalie
+                        ? 'bg-amber-500/15 border-amber-500/40 text-amber-600 dark:text-amber-400 ring-1 ring-amber-400/50 shadow-xs'
+                        : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:border-slate-300'
+                    }`}
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <span className={`w-4 h-4 rounded flex items-center justify-center text-xs font-bold border ${
+                        isGoalie ? 'bg-amber-500 text-slate-950 border-amber-600' : 'border-slate-400'
+                      }`}>
+                        {isGoalie ? '✓' : ''}
+                      </span>
+                      <span>🧤 É Goleiro?</span>
+                    </span>
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider">
+                      {isGoalie ? 'Sim (Goleiro)' : 'Não (Jogador)'}
+                    </span>
+                  </button>
                 </div>
 
                 {/* Actions Footer */}
@@ -854,37 +887,39 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                    Posição Primária
-                  </label>
-                  <select
-                    value={formPosition}
-                    onChange={(e) => setFormPosition(e.target.value as Position)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-medium"
-                  >
-                    <option value="GK">🧤 Goleiro</option>
-                    <option value="DEF">🛡️ Zagueiro / Fixo</option>
-                    <option value="MID">🎯 Meio / Ala</option>
-                    <option value="ATT">⚡ Atacante / Pivô</option>
-                  </select>
+              {/* Tick Goleiro Checkbox */}
+              <label className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-slate-900">
+                <input
+                  type="checkbox"
+                  checked={formPosition === 'GK'}
+                  onChange={(e) => setFormPosition(e.target.checked ? 'GK' : 'FIELD')}
+                  className="w-5 h-5 rounded text-amber-500 focus:ring-amber-400 accent-amber-500 cursor-pointer shrink-0"
+                />
+                <div className="text-xs">
+                  <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    🧤 É Goleiro?
+                  </span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
+                    {formPosition === 'GK'
+                      ? 'Marcado como Goleiro (sorteado 1 por time)'
+                      : 'Jogador de linha normal'}
+                  </span>
                 </div>
+              </label>
 
-                <div>
-                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                    Tipo de Vínculo
-                  </label>
-                  <select
-                    value={formTag}
-                    onChange={(e) => setFormTag(e.target.value as any)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white capitalize"
-                  >
-                    <option value="mensalista">Mensalista</option>
-                    <option value="diarista">Diarista</option>
-                    <option value="convidado">Convidado</option>
-                  </select>
-                </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                  Tipo de Vínculo
+                </label>
+                <select
+                  value={formTag}
+                  onChange={(e) => setFormTag(e.target.value as any)}
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white capitalize"
+                >
+                  <option value="mensalista">Mensalista</option>
+                  <option value="diarista">Diarista</option>
+                  <option value="convidado">Convidado</option>
+                </select>
               </div>
 
               {/* Rating Editor */}

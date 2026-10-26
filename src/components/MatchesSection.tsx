@@ -330,7 +330,7 @@ export const MatchesSection: React.FC<MatchesSectionProps> = ({
               <option value="">Nenhum selecionado</option>
               {allMatchPlayers.map((p) => (
                 <option key={p.id} value={p.id}>
-                  ⭐ {p.name} ({p.position})
+                  ⭐ {p.name} ({p.position === 'GK' ? 'Goleiro' : 'Jogador'})
                 </option>
               ))}
             </select>
