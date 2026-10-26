@@ -143,7 +143,7 @@ export default function App() {
             name: ip.name,
             position: ip.position,
             rating: ip.rating,
-            tag: 'diarista',
+            tag: 'convidado',
             matchesPlayed: 0,
             wins: 0,
             draws: 0,

@@ -77,9 +77,9 @@ export function parseWhatsAppList(
       .replace(/^[0-9]{1,2}[\.\-\)\s:]+\s*/, '')
       // remove leading bullet points or emojis
       .replace(/^[\s•\-\*⚽🧤🛡️🎯⚡🔥]+\s*/, '')
-      // remove trailing or parenthesized goalie notes like "(Goleiro)", "(G)", "- Goleiro"
-      .replace(/\s*[\(\[](?:goleiro|gol|g)[\)\]]/gi, '')
-      .replace(/[-–]\s*(?:goleiro|gol)\b/gi, '')
+      // remove trailing or parenthesized goalie or profile notes like "(Goleiro)", "(G)", "(Mensal)", "(Convidado)"
+      .replace(/\s*[\(\[](?:goleiro|gol|g|mensal|convidado)[\)\]]/gi, '')
+      .replace(/[-–]\s*(?:goleiro|gol|mensal|convidado)\b/gi, '')
       // remove trailing rating strings like "⭐⭐⭐⭐" or "- 4.5" or "/5"
       .replace(/⭐+/g, '')
       .replace(/(?:[-–:]?\s*(?:nota\s*)?[1-5](?:\.[0-9])?(?:\/5)?)$/i, '')

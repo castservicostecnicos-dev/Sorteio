@@ -26,6 +26,7 @@ export function getSavedPlayers(): Player[] {
     return parsed.map((p) => ({
       ...p,
       position: p.position === 'GK' ? 'GK' : 'FIELD',
+      tag: p.tag === 'convidado' ? 'convidado' : 'mensal',
     }));
   } catch {
     return [];

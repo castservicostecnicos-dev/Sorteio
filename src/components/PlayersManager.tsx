@@ -35,7 +35,7 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
 }) => {
   const [search, setSearch] = useState('');
   const [posFilter, setPosFilter] = useState<'ALL' | Position>('ALL');
-  const [tagFilter, setTagFilter] = useState<'ALL' | 'mensalista' | 'diarista' | 'convidado'>('ALL');
+  const [tagFilter, setTagFilter] = useState<'ALL' | 'mensal' | 'convidado'>('ALL');
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
 
   // Modal / Form state for Add or Edit
@@ -45,7 +45,7 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
   const [formNickname, setFormNickname] = useState('');
   const [formPosition, setFormPosition] = useState<Position>('FIELD');
   const [formRating, setFormRating] = useState<number>(3.5);
-  const [formTag, setFormTag] = useState<'mensalista' | 'diarista' | 'convidado'>('mensalista');
+  const [formTag, setFormTag] = useState<'mensal' | 'convidado'>('mensal');
 
   // IN-APP CONFIRMATION MODALS (Replaces window.confirm which fails inside iframes!)
   const [playerToDelete, setPlayerToDelete] = useState<Player | null>(null);
@@ -63,7 +63,7 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
     setFormNickname('');
     setFormPosition('FIELD');
     setFormRating(3.5);
-    setFormTag('mensalista');
+    setFormTag('mensal');
     setIsEditing(true);
   };
 
@@ -73,7 +73,7 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
     setFormNickname(player.nickname || '');
     setFormPosition(player.position === 'GK' ? 'GK' : 'FIELD');
     setFormRating(player.rating);
-    setFormTag(player.tag || 'mensalista');
+    setFormTag(player.tag === 'convidado' ? 'convidado' : 'mensal');
     setIsEditing(true);
   };
 
@@ -95,6 +95,19 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
       if (p.id === playerId) {
         const nextPos: Position = p.position === 'GK' ? 'FIELD' : 'GK';
         return { ...p, position: nextPos };
+      }
+      return p;
+    });
+    onUpdatePlayers(updated);
+  };
+
+  // Instant profile toggle updater (mensal <-> convidado)
+  const handleToggleTag = (playerId: string) => {
+    const updated = players.map((p) => {
+      if (p.id === playerId) {
+        const nextTag: 'mensal' | 'convidado' =
+          p.tag === 'convidado' ? 'mensal' : 'convidado';
+        return { ...p, tag: nextTag };
       }
       return p;
     });
@@ -211,12 +224,15 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       (p.nickname && p.nickname.toLowerCase().includes(search.toLowerCase()));
     const posMatch = posFilter === 'ALL' || p.position === posFilter;
-    const tagMatch = tagFilter === 'ALL' || p.tag === tagFilter;
+    const playerTag = p.tag === 'convidado' ? 'convidado' : 'mensal';
+    const tagMatch = tagFilter === 'ALL' || playerTag === tagFilter;
     return searchMatch && posMatch && tagMatch;
   });
 
   const totalGoalies = players.filter((p) => p.position === 'GK').length;
   const totalField = players.filter((p) => p.position !== 'GK').length;
+  const totalMensal = players.filter((p) => p.tag !== 'convidado').length;
+  const totalConvidado = players.filter((p) => p.tag === 'convidado').length;
 
   return (
     <div className="space-y-6">
@@ -384,21 +400,40 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
             </button>
           </div>
 
-          {/* Tag filters */}
+          {/* Profile filters: ONLY Todos, Mensal, Convidado */}
           <div className="flex items-center gap-1 text-xs">
-            {(['ALL', 'mensalista', 'diarista', 'convidado'] as const).map((tag) => (
-              <button
-                key={tag}
-                onClick={() => setTagFilter(tag)}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-colors capitalize ${
-                  tagFilter === tag
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                }`}
-              >
-                {tag === 'ALL' ? 'Todos Vínculos' : tag}
-              </button>
-            ))}
+            <button
+              onClick={() => setTagFilter('ALL')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
+                tagFilter === 'ALL'
+                  ? 'bg-slate-900 text-white dark:bg-emerald-600'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              }`}
+            >
+              Todos ({players.length})
+            </button>
+            <button
+              onClick={() => setTagFilter('mensal')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1 ${
+                tagFilter === 'mensal'
+                  ? 'bg-indigo-600 text-white font-bold'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              }`}
+            >
+              <span>📌</span>
+              <span>Mensal ({totalMensal})</span>
+            </button>
+            <button
+              onClick={() => setTagFilter('convidado')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1 ${
+                tagFilter === 'convidado'
+                  ? 'bg-sky-600 text-white font-bold'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              }`}
+            >
+              <span>🎟️</span>
+              <span>Convidado ({totalConvidado})</span>
+            </button>
           </div>
         </div>
       )}
@@ -443,7 +478,7 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
               Edição Rápida ({filteredPlayers.length} atletas)
             </span>
             <span className="text-slate-400">
-              Clique no botão de Goleiro ou nas estrelas para ajustar na hora
+              Clique no botão de Goleiro, Mensal ou nas estrelas para ajustar na hora
             </span>
           </div>
 
@@ -455,7 +490,7 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
                   <th className="py-2.5 px-3 min-w-[160px]">Nome do Atleta</th>
                   <th className="py-2.5 px-3 min-w-[130px]">Goleiro?</th>
                   <th className="py-2.5 px-3 min-w-[180px]">Nível / Estrelas</th>
-                  <th className="py-2.5 px-3 min-w-[100px]">Vínculo</th>
+                  <th className="py-2.5 px-3 min-w-[125px]">Mensal?</th>
                   <th className="py-2.5 px-3 text-right w-24">Ações</th>
                 </tr>
               </thead>
@@ -555,10 +590,29 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
                         </div>
                       </td>
 
+                      {/* Mensal Tick / Toggle Button */}
                       <td className="py-2.5 px-3">
-                        <span className="capitalize text-slate-500 text-[11px]">
-                          {player.tag || 'mensalista'}
-                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleTag(player.id)}
+                          className={`px-3 py-1.5 text-xs rounded-xl font-bold border transition-all cursor-pointer flex items-center gap-1.5 ${
+                            player.tag !== 'convidado'
+                              ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/30 ring-1 ring-indigo-400/50'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:text-slate-900'
+                          }`}
+                          title="Clique para marcar como Mensal ou desmarcar para Convidado"
+                        >
+                          <span
+                            className={`w-3.5 h-3.5 rounded flex items-center justify-center text-[10px] font-bold border ${
+                              player.tag !== 'convidado'
+                                ? 'bg-indigo-600 text-white border-indigo-600'
+                                : 'border-slate-400'
+                            }`}
+                          >
+                            {player.tag !== 'convidado' ? '✓' : ''}
+                          </span>
+                          <span>{player.tag !== 'convidado' ? '📌 Mensal' : 'Convidado'}</span>
+                        </button>
                       </td>
 
                       <td className="py-2.5 px-3 text-right">
@@ -620,12 +674,28 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
                           <span className={`font-semibold ${isGoalie ? 'text-amber-500' : 'text-emerald-600 dark:text-emerald-400'}`}>
                             {isGoalie ? '🧤 Goleiro' : '⚽ Jogador'}
                           </span>
-                          {player.tag && (
-                            <>
-                              <span>·</span>
-                              <span className="capitalize">{player.tag}</span>
-                            </>
-                          )}
+                          <span>·</span>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleTag(player.id)}
+                            className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border transition-colors cursor-pointer flex items-center gap-1 ${
+                              player.tag === 'convidado'
+                                ? 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:text-slate-700'
+                                : 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/30'
+                            }`}
+                            title="Clique para marcar como Mensal ou desmarcar para Convidado"
+                          >
+                            <span
+                              className={`w-3 h-3 rounded flex items-center justify-center text-[9px] font-bold border ${
+                                player.tag !== 'convidado'
+                                  ? 'bg-indigo-600 text-white border-indigo-600'
+                                  : 'border-slate-400'
+                              }`}
+                            >
+                              {player.tag !== 'convidado' ? '✓' : ''}
+                            </span>
+                            <span>{player.tag !== 'convidado' ? 'Mensal' : 'Convidado'}</span>
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -907,20 +977,25 @@ export const PlayersManager: React.FC<PlayersManagerProps> = ({
                 </div>
               </label>
 
-              <div>
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                  Tipo de Vínculo
-                </label>
-                <select
-                  value={formTag}
-                  onChange={(e) => setFormTag(e.target.value as any)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white capitalize"
-                >
-                  <option value="mensalista">Mensalista</option>
-                  <option value="diarista">Diarista</option>
-                  <option value="convidado">Convidado</option>
-                </select>
-              </div>
+              {/* Tick Mensal Checkbox */}
+              <label className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-slate-900">
+                <input
+                  type="checkbox"
+                  checked={formTag === 'mensal'}
+                  onChange={(e) => setFormTag(e.target.checked ? 'mensal' : 'convidado')}
+                  className="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 accent-indigo-600 cursor-pointer shrink-0"
+                />
+                <div className="text-xs">
+                  <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    📌 É Mensal?
+                  </span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
+                    {formTag === 'mensal'
+                      ? 'Marcado: Mensalista (atleta fixo da pelada)'
+                      : 'Desmarcado: Convidado (atleta avulso)'}
+                  </span>
+                </div>
+              </label>
 
               {/* Rating Editor */}
               <div className="p-3 bg-amber-500/5 border border-amber-500/20 rounded-xl space-y-2">

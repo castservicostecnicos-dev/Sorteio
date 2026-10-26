@@ -313,6 +313,10 @@ export const DrawSection: React.FC<DrawSectionProps> = ({
                       <span>{player.position === 'GK' ? '🧤 GOL' : '⚽ JOG'}</span>
                       <span>·</span>
                       <span className="text-amber-500">⭐{player.rating}</span>
+                      <span>·</span>
+                      <span className={player.tag === 'convidado' ? 'text-sky-500' : 'text-indigo-500 font-semibold'}>
+                        {player.tag === 'convidado' ? 'Convidado' : 'Mensal'}
+                      </span>
                     </div>
                   </div>
                   <div

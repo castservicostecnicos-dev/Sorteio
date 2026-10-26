@@ -31,7 +31,7 @@ export interface Player {
   nickname?: string;
   position: Position; // 'GK' or 'FIELD'
   rating: number; // 1.0 to 5.0
-  tag?: 'mensalista' | 'diarista' | 'convidado';
+  tag?: 'mensal' | 'convidado';
   matchesPlayed: number;
   wins: number;
   draws: number;
