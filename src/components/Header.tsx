@@ -1,6 +1,5 @@
-import React from 'react';
-import { Sun, Moon, Share2, ClipboardList, Users, Trophy, LayoutGrid, ShieldAlert } from 'lucide-react';
-
+import { Sun, Moon, Share2, ClipboardList, Users, Trophy, LayoutGrid, ShieldAlert, RefreshCw } from 'lucide-react';
+import { useAppUpdate } from '../hooks/useAppUpdate';
 import { PWAInstallButton } from './PWAInstallButton';
 
 interface HeaderProps {
@@ -20,6 +19,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenWhatsAppModal,
   drawnTeamsCount,
 }) => {
+  const { forceCheckUpdate, isUpdating } = useAppUpdate();
+
   return (
     <header className="sticky top-0 z-40 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -124,7 +125,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </nav>
 
-          {/* Zone 3: Actions (PWA install + WhatsApp import + Theme toggle) */}
+          {/* Zone 3: Actions (PWA install + WhatsApp import + Theme toggle + Sync button) */}
           <div className="flex items-center gap-2 shrink-0">
             <PWAInstallButton />
 
@@ -136,6 +137,15 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="text-sm">📋</span>
               <span className="hidden sm:inline">Colar Lista WhatsApp</span>
               <span className="sm:hidden">Lista</span>
+            </button>
+
+            <button
+              onClick={forceCheckUpdate}
+              title="Verificar atualizações / Recarregar última versão"
+              aria-label="Verificar atualizações"
+              className="p-2 rounded-lg text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            >
+              <RefreshCw className={`w-4 h-4 ${isUpdating ? 'animate-spin text-emerald-500' : ''}`} />
             </button>
 
             <button

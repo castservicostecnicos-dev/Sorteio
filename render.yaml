@@ -6,6 +6,8 @@ services:
     buildCommand: npm install --legacy-peer-deps && npm run build
     startCommand: npm start
     healthCheckPath: /healthz
+    autoDeploy: true
+    branch: main
     envVars:
       - key: NODE_VERSION
         value: 20

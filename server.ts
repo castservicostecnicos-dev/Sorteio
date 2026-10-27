@@ -14,11 +14,33 @@ app.get('/healthz', (req, res) => {
   res.status(200).send('OK');
 });
 
-// Serve static assets from built Vite dist folder
-app.use(express.static(distPath));
+// Serve static assets from built Vite dist folder with proper Cache-Control
+app.use(
+  express.static(distPath, {
+    setHeaders: (res, filePath) => {
+      // Never cache index.html, sw.js, or manifest so new deploys are loaded immediately
+      if (
+        filePath.endsWith('index.html') ||
+        filePath.endsWith('sw.js') ||
+        filePath.endsWith('registerSW.js') ||
+        filePath.endsWith('manifest.webmanifest')
+      ) {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+      } else if (filePath.includes('/assets/')) {
+        // Hashed assets can be safely cached
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+    },
+  })
+);
 
-// Fallback all routes to index.html for Single Page Application
+// Fallback all routes to index.html for Single Page Application with no-cache headers
 app.get('*', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   res.sendFile(path.resolve(distPath, 'index.html'));
 });
 

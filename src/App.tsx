@@ -30,6 +30,7 @@ import { StatsDashboard } from './components/StatsDashboard';
 import { WhatsAppImportModal } from './components/WhatsAppImportModal';
 import { ExportModal } from './components/ExportModal';
 import { OfflineIndicator } from './components/OfflineIndicator';
+import { UpdateNotification } from './components/UpdateNotification';
 import {
   Users,
   LayoutGrid,
@@ -502,6 +503,9 @@ export default function App() {
 
       {/* Offline Mode Indicator */}
       <OfflineIndicator />
+
+      {/* Auto-update Notification */}
+      <UpdateNotification />
     </div>
   );
 }
